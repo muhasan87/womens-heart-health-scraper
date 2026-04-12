@@ -64,26 +64,50 @@ def extract_content_and_summary(soup, title: str) -> tuple[str, str]:
 def build_article_record(article_url: str, item_id: str) -> dict:
     soup = get_soup(article_url)
 
-    title = extract_title_generic(soup, [" - ABC News"])
-    author = extract_author_generic(soup)
-    publish_time = extract_publish_time_generic(soup)
-    content, summary = extract_content_and_summary(soup, title)
-    topic = classify_topic(title, content)
+    #classification
+    is_heart = is_heart_health_related(title or "", content or "")
+    source_class = "factual"
 
-    return build_record(
-        item_id=item_id,
-        source="ABC News",
-        platform="news",
-        source_type="media",
-        url=article_url,
-        title=title,
-        content=content,
-        summary=summary,
-        author=author,
-        author_type="journalist" if author else "",
-        publish_time=publish_time,
-        topic=topic,
-    )
+    #topic = (
+        #"women_heart_health"
+        #if is_heart_health_related(title, content)
+        #else "general_health"
+    #)
+
+    record = {
+        "id": item_id,
+        "source": "ABC News",
+        "source_category": "news",
+        "source_type": "media",
+        "source_classification": source_class,
+        "url": article_url,
+        "title": title,
+        "content": content,
+        "summary": summary,
+        "author": author,
+        "author_type": "individual" if author else "",
+        "publish_time": publish_time,
+        "scrape_time": datetime.now().isoformat(),
+        "tags": [], #need to be improved later
+        "hashtags": [],
+        "mentions": [],
+        "engagement": {
+            "likes": None, 
+            "comments": None, 
+            "shares": None, 
+        },
+        "media_type": "text",
+        "content_type": "article",
+        "language": "en",
+    }
+
+    return record
+
+
+def save_json(record: dict, filename: str) -> None:
+    output_path = OUTPUT_DIR / filename
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(record, file, indent=2, ensure_ascii=False)
 
 
 def main() -> None:
@@ -110,11 +134,8 @@ def main() -> None:
             continue
 
         print("Title:", article["title"])
-        print("Author:", article["author"])
-        print("Publish time:", article["publish_time"])
-        print("Topic:", article["topic"])
 
-        if article["topic"] == "women_heart_health":
+        if is_heart_health_related(article["title"] or "", article["content"] or ""):
             matched_article = article
             break
 
