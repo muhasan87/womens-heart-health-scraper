@@ -3,7 +3,7 @@ from pathlib import Path
 
 from common import (
     # build_record,
-    # classify_topic,
+    classify_topic,
     clean_paragraph_list,
     extract_author_generic,
     extract_publish_time_generic,
@@ -14,7 +14,7 @@ from common import (
     now_iso
 )
 
-LISTING_URL = "https://www.abc.net.au/news/health"
+LISTING_URL = "https://www.abc.net.au/news/topic/heart-disease"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = BASE_DIR / "data" / "json"
@@ -68,9 +68,25 @@ def extract_content_and_summary(soup, title: str) -> tuple[str, str]:
     return content, summary
 
 def is_heart_related(title: str, content: str) -> bool:
-    text = f"{title} {content}".lower()
-    keywords = ["heart", "cardio", "cardiovascular", "stroke", "blood pressure"]
-    return any(k in text for k in keywords)
+    text = f"{title} {content}".lower() #needs to be integrated into common.py eventually
+    heart_keywords = [
+        "heart", "cardio", "cardiovascular", "stroke", 
+        "blood pressure", "cardiac", "coronary", "hypertension",
+        "cholesterol", "artery", "heart disease", "heart attack"
+    ]
+    women_keywords = [
+        "women", "woman", "female", "menopause", "pregnancy",
+        "pregnant", "postpartum", "gender", "sex", "disparity"
+    ]
+    exclusions = [
+        "vaccin", "immunis", "flu", "covid"
+    ]
+    
+    has_heart = any(k in text for k in heart_keywords)
+    has_women = any(w in text for w in women_keywords)
+    has_exclusion = any(exc in text for exc in exclusions)
+    
+    return has_heart and has_women and not has_exclusion
 
 
 def build_article_record(article_url: str, item_id: str) -> dict:
@@ -134,7 +150,7 @@ def main() -> None:
 
     matched_article = None
 
-    for index, link in enumerate(links[:20], start=1):
+    for index, link in enumerate(links[:100], start=1):
         print(f"\nChecking article {index}: {link}")
 
         try:
@@ -156,7 +172,7 @@ def main() -> None:
         print("URL:", matched_article["url"])
         #print("Topic:", matched_article["topic"])
     else:
-        print("\nNo women heart health articles found in first 20 ABC links.")
+        print("\nNo women heart health articles found in first 100 ABC links.")
 
 
 if __name__ == "__main__":
