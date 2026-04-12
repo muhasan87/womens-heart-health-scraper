@@ -161,7 +161,6 @@ def main() -> None:
         print(f"\nChecking article {index}: {link}")
         article = extract_article(link, f"abc_{index:03d}")
         print("Title:", article["title"])
-        print("Topic:", article["topic"])
 
         if is_heart_health_related(article["title"] or "", article["content"] or ""):
             matched_article = article
