@@ -1,28 +1,26 @@
 {
-  "id": "abc_007",
+  "id": "abc_008",
   "source": "ABC News",
-  "platform": "news",
+  "source_category": "news",
   "source_type": "media",
+  "source_classification": "factual",
   "url": "https://www.abc.net.au/news/2026-04-08/when-is-the-best-time-to-get-flu-vaccine/106538808",
   "title": "When is the best time to get your flu shot? Two infectious diseases experts explain",
   "content": "Each year the flu vaccine is designed to protect against a mix of different virus strains, depending on which ones are circulating. ( Unsplash, CDC )\nWe usually have to wait until winter approaches before we see an increase in cases of influenza, or the flu. But we have already seen a lot of flu this year, with 25,000 cases reported from January to March — and that's only a fraction of actual case numbers.\nMost people with the flu recover without treatment. But it can cause serious complications in older people, young children, pregnant women and those with underlying chronic diseases such as asthma or heart disease. Influenza kills around 3,500 Australians a year and lands 18,000 in hospital.\nThere were more deaths associated with influenza last year than any other year this century, according to the Australia Bureau of Statistics.\nVaccination is the best way to protect against flu and is recommended for everyone over the age of six months.\nFlu vaccines are free for certain risk groups . Others can access them (usually for a fee) at pharmacies, GP clinics and local council clinics in some states and territories. Some employers also offer vaccinations for staff.\nInfluenza has been unpredictable since the COVID pandemic, with off-season circulation. There are also concerns that protection may lag at the end of winter. So when is the best time to get vaccinated?\nFlu symptoms include a cough, sore throat, fever, body aches and fatigue.\nFlu spreads from person to person via small respiratory droplets when you talk, cough and sneeze. It may also spread by touching a surface or object where infected droplets have landed, but this is less common.\nSo if you have flu-like symptoms , it's important to stay at home.\nFlu spreads more in the winter months due to increased contact between people and time spent indoors. Some studies also suggest influenza viruses transmit better in the cold .\nTypically, human flu cases are caused by four virus strains, A(H3N2), A(H1N1), B/Victoria, and B/Yamagata.\nSo far this year in Australia , almost 98 per cent of cases have been influenza A(H3N2), and the remaining have been influenza B/Victoria.\nTheoretically, the best time to get the flu vaccine is about two weeks before flu cases start to rise. ( ABC News: Kym Agius )\nIn late 2025 , a new variant of the H3N2 strain known as subclade K or \"super-K\" emerged in the Northern Hemisphere winter.",
   "summary": "Each year the flu vaccine is designed to protect against a mix of different virus strains, depending on which ones are circulating. ( Unsplash, CDC )",
   "author": "Meru Sheel and Allen Cheng",
-  "author_type": "journalist",
+  "author_type": "individual",
   "publish_time": "2026-04-08T06:09:54.000Z",
-  "scrape_time": "2026-04-09T10:30:17.545131+00:00",
+  "scrape_time": "2026-04-12T06:48:43.507735+00:00",
   "tags": [],
   "hashtags": [],
   "mentions": [],
   "engagement": {
     "likes": null,
     "comments": null,
-    "shares": null,
-    "views": null
+    "shares": null
   },
   "media_type": "text",
-  "media_url": "",
-  "topic": "women_heart_health",
   "content_type": "article",
   "language": "en"
 }
