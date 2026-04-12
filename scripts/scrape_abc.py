@@ -97,32 +97,39 @@ def extract_article(article_url: str, item_id: str) -> dict:
     content = "\n".join(content_parts[:20])
     summary = content_parts[0] if content_parts else ""
 
-    topic = (
-        "women_heart_health"
-        if is_heart_health_related(title, content)
-        else "general_health"
-    )
+    #classification
+    is_heart = is_heart_health_related(title or "", content or "")
+    source_class = "factual"
+
+    #topic = (
+        #"women_heart_health"
+        #if is_heart_health_related(title, content)
+        #else "general_health"
+    #)
 
     record = {
         "id": item_id,
         "source": "ABC News",
-        "platform": "news",
+        "source_category": "news",
         "source_type": "media",
+        "source_classification": source_class,
         "url": article_url,
         "title": title,
         "content": content,
         "summary": summary,
         "author": author,
-        "author_type": "journalist" if author else "",
+        "author_type": "individual" if author else "",
         "publish_time": publish_time,
         "scrape_time": datetime.now().isoformat(),
-        "tags": [],
+        "tags": [], #need to be improved later
         "hashtags": [],
         "mentions": [],
-        "engagement": {"likes": None, "comments": None, "shares": None, "views": None},
+        "engagement": {
+            "likes": None, 
+            "comments": None, 
+            "shares": None, 
+        },
         "media_type": "text",
-        "media_url": "",
-        "topic": topic,
         "content_type": "article",
         "language": "en",
     }
@@ -156,7 +163,7 @@ def main() -> None:
         print("Title:", article["title"])
         print("Topic:", article["topic"])
 
-        if article["topic"] == "women_heart_health":
+        if is_heart_health_related(article["title"] or "", article["content"] or ""):
             matched_article = article
             break
 
