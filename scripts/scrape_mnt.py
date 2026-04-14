@@ -1,3 +1,8 @@
+import json
+import matplotlib.pyplot as plt #need to add to requirements.txt
+from datetime import datetime, timezone
+from pathlib import Path
+
 from common import (
     build_record,
     classify_topic,
@@ -8,19 +13,71 @@ from common import (
     extract_title_generic,
     get_soup,
     save_json,
+    now_iso,
+    CHART_DIR
 )
 
-BASE_CATEGORY_URL = "https://www.medicalnewstoday.com/categories/heart-disease"
-MAX_PAGES = 10
+LISTING_URL = "https://www.medicalnewstoday.com/womens-health" #initially: https://www.medicalnewstoday.com/categories/heart-disease
+# other contenders:
+    #https://www.medicalnewstoday.com/cardiovascular-health
+    # could consider scraping from multiple categories
+BASE_DIR = Path(__file__).resolve().parent.parent
+#MAX_PAGES = 10
 
+def collect_article_links() -> list[str]:
+    soup = get_soup(LISTING_URL)
+    links = []
 
-def build_page_url(page_number: int) -> str:
+    for a_tag in soup.find_all("a", href=True):
+        href = a_tag["href"]
+
+        if href.startswith("/"):
+            href = f"https://www.medicalnewstoday.com/{href}"
+
+        if not href.startswith("https://www.medicalnewstoday.com/articles/"):
+            continue
+
+        if "#" in href:
+            continue
+
+        #if "/news/20" not in href:
+            #continue
+
+        if href not in links:
+            links.append(href)
+
+    return links
+
+def extract_content_and_summary(soup, title: str) -> tuple[str, str]:
+    junk_phrases = [
+        "medical news today has strict sourcing guidelines",
+        "fact checked",
+        "copy edited by",
+        "latest news",
+        "related coverage",
+        "share on pinterest",
+        "share on facebook",
+        "share on twitter",
+        "read this next",
+        "was this helpful",
+        "how we reviewed this article",
+        "optum perks is owned by",
+    ]
+    paragraphs = [p.get_text(" ", strip=True) for p in soup.find_all("p")]
+    cleaned = clean_paragraph_list(paragraphs, junk_phrases=junk_phrases)
+
+    content = "\n".join(cleaned[:15]) if cleaned else ""
+    summary = extract_summary_from_paragraphs(cleaned, title)
+
+    return content, summary
+
+#def build_page_url(page_number: int) -> str:
     if page_number == 1:
         return BASE_CATEGORY_URL
     return f"{BASE_CATEGORY_URL}?page={page_number}"
 
 
-def title_looks_heart_related(title: str) -> bool:
+#def title_looks_heart_related(title: str) -> bool:
     title_lower = title.lower()
 
     keywords = [
@@ -40,7 +97,7 @@ def title_looks_heart_related(title: str) -> bool:
     return any(word in title_lower for word in keywords)
 
 
-def collect_article_links_from_page(page_url: str) -> list[str]:
+#def collect_article_links_from_page(page_url: str) -> list[str]:
     soup = get_soup(page_url)
     links = []
 
@@ -72,7 +129,7 @@ def collect_article_links_from_page(page_url: str) -> list[str]:
     return links
 
 
-def collect_article_links(max_pages: int = MAX_PAGES) -> list[str]:
+#def collect_article_links(max_pages: int = MAX_PAGES) -> list[str]:
     all_links = []
 
     for page_number in range(1, max_pages + 1):
@@ -93,7 +150,7 @@ def collect_article_links(max_pages: int = MAX_PAGES) -> list[str]:
     return all_links
 
 
-def extract_content_and_summary(soup, title: str) -> tuple[str, str]:
+#def extract_content_and_summary(soup, title: str) -> tuple[str, str]:
     junk_phrases = [
         "medical news today has strict sourcing guidelines",
         "fact checked",
@@ -125,43 +182,64 @@ def build_article_record(article_url: str, item_id: str) -> dict:
     author = extract_author_generic(soup)
     publish_time = extract_publish_time_generic(soup)
     content, summary = extract_content_and_summary(soup, title)
-    topic = classify_topic(title, content)
+    #topic = classify_topic(title, content)
+    
+    record = {
+        "id": item_id,
+        "source": "Medical News Today",
+        "source_category": "news",
+        "source_type": "media",
+        "source_classification": "factual",
+        "url": article_url,
+        "title": title,
+        "content": content,
+        "summary": summary,
+        "author": author or None,
+        "author_type": "individual" if author else None,
+        "publish_time": publish_time or None,
+        "scrape_time": now_iso(),
+        "tags": [], #need to be improved later
+        "hashtags": [],
+        "mentions": [],
+        "engagement": {
+            "likes": None, 
+            "comments": None, 
+            "shares": None, 
+        },
+        "media_type": "text",
+        "content_type": "article",
+        "language": "en",
+    }
 
-    return build_record(
-        item_id=item_id,
-        source="Medical News Today",
-        platform="news",
-        source_type="media",
-        url=article_url,
-        title=title,
-        content=content,
-        summary=summary,
-        author=author,
-        author_type="journalist" if author else "",
-        publish_time=publish_time,
-        topic=topic,
-    )
+    return record
 
 
-def is_valid_record(record: dict) -> bool:
+#def is_valid_record(record: dict) -> bool:
     return bool(record["title"].strip() and record["content"].strip() and record["summary"].strip())
 
 
 def main() -> None:
-    links = collect_article_links(MAX_PAGES)
-    print(f"\nFound {len(links)} total filtered links")
+    links = collect_article_links()
+    print(f"Found {len(links)} possible article links")
+    
+    records = []
+    total_examined = 0
+    general_count = 0
+    heart_count = 0
+    women_heart_count = 0
 
     if not links:
-        print("No suitable links found.")
+        print("No article links found.")
         return
 
-    print("\nFirst 10 links:")
-    for i, link in enumerate(links[:10], start=1):
+    #print("\nFirst 10 links:")
+    #for i, link in enumerate(links[:10], start=1):
         print(f"{i}. {link}")
 
-    matched_article = None
+    #matched_article = None
 
-    for index, link in enumerate(links[:20], start=1):
+    for index, link in enumerate(links[:200], start=1):
+        total_examined += 1
         print(f"\nChecking article {index}: {link}")
 
         try:
@@ -169,29 +247,58 @@ def main() -> None:
         except Exception as error:
             print(f"Error reading article: {error}")
             continue
-
-        if not is_valid_record(article):
-            print("Skipping invalid article record")
-            continue
-
+        
         print("Title:", article["title"])
-        print("Author:", article["author"])
-        print("Publish time:", article["publish_time"])
-        print("Topic:", article["topic"])
 
-        if article["topic"] in ["women_heart_health", "general_heart_health"]:
-            matched_article = article
-            break
+        topic = classify_topic(article["title"] or "", article["content"] or "")
+        if topic == "general_health":
+            general_count += 1
+        elif topic == "heart_health":
+            heart_count += 1
+        elif topic == "women_heart_health":
+            women_heart_count += 1
+            records.append(article)
+    
+    if records:
+        save_json(records, "mnt_heart_test")
+        print(f"\n Saved {len(records)} articles to JSON")
 
-    if matched_article:
-        save_json(matched_article, "mnt_sample.json")
-        print("\nSaved article to data/json/mnt_sample.json")
-        print("Title:", matched_article["title"])
-        print("URL:", matched_article["url"])
-        print("Topic:", matched_article["topic"])
+    #if matched_article:
+        #save_json(matched_article, "mnt_sample.json")
+        #print("\nSaved article to data/json/mnt_sample.json")
+        #print("Title:", matched_article["title"])
+        #print("URL:", matched_article["url"])
+        #print("Topic:", matched_article["topic"])
     else:
         print("\nNo suitable heart-related article found.")
+    
+    # print summary
+    print("\nScraping Summary:")
+    print(f"Total examined: {total_examined}")
+    print(f"General health: {general_count}")
+    print(f"Heart health: {heart_count}")
+    print(f"Women's heart health: {women_heart_count}")
 
+    # visualisation
+    labels = ["general_health", "heart_health", "women_heart_health"]
+    values = [general_count, heart_count, women_heart_count]
+    
+    plt.figure()
+    plt.bar(labels, values)
+    
+    plt.title("Medical News Today Article Summary")
+    plt.xlabel("Category")
+    plt.ylabel("Number of Articles")
+    
+    plt.xticks(rotation=20)
+    plt.tight_layout()
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    chart_path = CHART_DIR / "mnt_classification_summary_{timestamp}.png" #needs to be fixed
+    plt.savefig(chart_path)
+    plt.close()
+    
+    print(f"Chart saved to: {chart_path}")
 
 if __name__ == "__main__":
     main()
