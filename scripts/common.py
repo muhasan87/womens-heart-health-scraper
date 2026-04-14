@@ -242,6 +242,7 @@ def classify_topic(title: str, content: str) -> str:
         "cholesterol",
         "artery",
         "atherosclerosis",
+        "heart"
     ]
 
     has_women = any(term in text for term in women_terms)
