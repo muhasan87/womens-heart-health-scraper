@@ -279,7 +279,7 @@ Notes:
 - Some sources change their HTML over time, so selectors may need maintenance.
 - Instagram scraping requires a valid Instaloader session and is treated as experimental in this repo.
 
-## Recruiter-Friendly Summary
+##  Summary
 
 This capstone demonstrates end-to-end data engineering and analysis work: source discovery, web scraping, browser automation, content cleaning, schema design, rule-based NLP, structured JSON outputs, cross-source statistics, and visual reporting. The project is intentionally modular so new health sources can be added without changing the shared processing and analytics layer.
 
